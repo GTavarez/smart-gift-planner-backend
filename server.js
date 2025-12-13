@@ -6,14 +6,22 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+import cors from "cors";
+
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "https://iyadshobaki.github.io"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
 });
