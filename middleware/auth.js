@@ -1,19 +1,24 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-export default function auth(req, res, next) {
-  const { authorization } = req.headers;
-
-  if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Authorization required" });
-  }
-
-  const token = authorization.replace("Bearer ", "");
-
+export default async function auth(req, res, next) {
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload;
+    const header = req.headers.authorization || req.headers.Authorization;
+
+    if (!header || !header.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const token = header.replace("Bearer ", "").trim();
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded._id);
+
+    if (!user) return res.status(401).json({ message: "User not found" });
+
+    req.user = user;
     next();
-  } catch {
+  } catch (err) {
     res.status(401).json({ message: "Invalid token" });
   }
 }

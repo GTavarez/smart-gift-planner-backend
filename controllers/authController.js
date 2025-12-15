@@ -18,13 +18,14 @@ export const signup = async (req, res) => {
       password: hash,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (err) {
-    res.status(400).json({ message: "User already exists" });
+    return res.status(400).json({ message: "User already exists" });
   }
 };
+
 
 export const signin = async (req, res) => {
   const { email, password } = req.body;
@@ -49,5 +50,14 @@ export const signin = async (req, res) => {
 
 export const getMe = async (req, res) => {
   const user = await User.findById(req.user._id);
-  res.json(user);
+
+  res.json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    budget: user.budget,
+    relationship: user.relationship,
+    avatar: user.avatar,
+    gifts: user.gifts
+  });
 };
