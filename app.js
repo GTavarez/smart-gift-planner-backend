@@ -10,7 +10,7 @@ const app = express();
 // ---------------------
 app.use(
   cors({
-    origin: "http://localhost:3001",
+    origin: ["http://localhost:3001", "https://iyadshobaki.github.io"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PATCH", "DELETE"],
@@ -25,8 +25,8 @@ app.use(express.json());
 // ---------------------
 // ROUTES
 // ---------------------
-app.use("/", authRoutes);     // /signup, /signin, /me
-app.use("/", profileRoutes);  // /profile, /gifts, etc.
+app.use("/", authRoutes); // /signup, /signin, /me
+app.use("/", profileRoutes); // /profile, /gifts, etc.
 
 // ---------------------
 // 404 — MUST BE LAST!
