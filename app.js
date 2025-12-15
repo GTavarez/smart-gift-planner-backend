@@ -10,7 +10,11 @@ const app = express();
 // ---------------------
 app.use(
   cors({
-    origin: ["http://localhost:3001", "https://iyadshobaki.github.io"],
+    origin: [
+      "http://localhost:3001",
+      "https://iyadshobaki.github.io",
+      "https://gtavarez.github.io",
+    ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PATCH", "DELETE"],
