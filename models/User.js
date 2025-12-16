@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-const giftSchema = new mongoose.Schema({
+const GiftSchema = new mongoose.Schema({
   name: String,
   price: Number,
   link: String,
   description: String,
   status: {
     type: String,
-    enum: ["none", "considering", "purchased"],
-    default: "none",
-  }
+    enum: ["Gift Status", "Considering", "Purchased"],
+    default: "No Status",
+  },
 });
 
 const userSchema = new mongoose.Schema(
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: "" },
 
     // ⭐ SAVED GIFTS stored directly inside the user document
-    gifts: [giftSchema],
+    gifts: [GiftSchema],
   },
   { timestamps: true }
 );

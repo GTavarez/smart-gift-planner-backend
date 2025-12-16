@@ -1,29 +1,35 @@
 import express from "express";
-import auth from "../middleware/auth.js";
+import authMiddleware from "../middleware/auth.js";
 import User from "../models/User.js";
+import { Router } from "express";
+const router = Router();
 
-const router = express.Router();
+import upload from "../middleware/upload.js";
 
-// ⭐ GET FULL PROFILE
-router.get("/profile", auth, async (req, res) => {
-  res.json({
-    id: req.user._id,
-    email: req.user.email,
-    name: req.user.name,
-    budget: req.user.budget,
-    gifts: req.user.gifts,
-  });
+// GET USER PROFILE
+router.get("/profile", authMiddleware, async (req, res) => {
+  try {
+    const user = req.user.toObject();
+
+    if (user.avatar && !user.avatar.startsWith("http")) {
+      user.avatar = `http://localhost:3002${user.avatar}`;
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error loading profile" });
+  }
 });
 
 // ⭐ UPDATE BUDGET
-router.patch("/profile/budget", auth, async (req, res) => {
+router.patch("/profile/budget", authMiddleware, async (req, res) => {
   req.user.budget = req.body.budget;
   await req.user.save();
   res.send(req.user);
 });
 
 // ⭐ UPDATE PROFILE FIELDS
-router.patch("/profile", auth, async (req, res) => {
+router.patch("/profile", authMiddleware, async (req, res) => {
   const fields = ["name", "relationship", "avatar"];
   fields.forEach((key) => {
     if (req.body[key] !== undefined) req.user[key] = req.body[key];
@@ -34,14 +40,14 @@ router.patch("/profile", auth, async (req, res) => {
 });
 
 // ⭐ ADD A NEW GIFT
-router.post("/gifts", auth, async (req, res) => {
+router.post("/gifts", authMiddleware, async (req, res) => {
   req.user.gifts.push(req.body);
   await req.user.save();
   res.send(req.user.gifts);
 });
 
 // ⭐ UPDATE GIFT STATUS
-router.patch("/gifts/:index/status", auth, async (req, res) => {
+router.patch("/gifts/:index/status", authMiddleware, async (req, res) => {
   const { index } = req.params;
   const { status } = req.body;
 
@@ -55,7 +61,7 @@ router.patch("/gifts/:index/status", auth, async (req, res) => {
 });
 
 // ⭐ DELETE A GIFT
-router.delete("/gifts/:index", auth, async (req, res) => {
+router.delete("/gifts/:index", authMiddleware, async (req, res) => {
   const { index } = req.params;
 
   if (!req.user.gifts[index]) {
@@ -67,5 +73,30 @@ router.delete("/gifts/:index", auth, async (req, res) => {
 
   res.send(req.user.gifts);
 });
+// ⭐ UPLOAD AVATAR
+router.patch(
+  "/profile/avatar",
+  authMiddleware,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const avatarUrl = `/smart_gift_planner/uploads/avatars/${req.file.filename}`;
+
+
+      // Save avatar in MongoDB
+      req.user.avatar = avatarUrl;
+      await req.user.save();
+
+      res.json({ avatar: avatarUrl });
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
 
 export default router;
